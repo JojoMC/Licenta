@@ -3,8 +3,14 @@ package com.luv2code.springsecurity.demo.controller;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
 import java.util.Iterator;
+import java.util.Properties;
 import java.util.TreeSet;
 
 import org.apache.poi.ss.usermodel.*;
@@ -23,6 +29,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.luv2code.springsecurity.demo.entity.Norm;
 
@@ -32,6 +39,19 @@ import java.util.ArrayList;
 @Controller
 public class DemoController {
 	
+	private static int maxNumberHours = 400;
+	private static int weeksPerSemester = 14;
+	private static int counter = 0;
+	
+	
+	public int getMaxNumberHours() {
+		return maxNumberHours;
+	}
+
+	public void setMaxNumberHours(int max_number_hours) {
+		this.maxNumberHours = max_number_hours;
+	}
+
 	@GetMapping("/")
 	public String showHome(Model theModel) {
 		
@@ -43,7 +63,7 @@ public class DemoController {
 			Class.forName("com.mysql.jdbc.Driver"); 
 			Connection con=DriverManager.getConnection(  
 					"jdbc:mysql://localhost:3306/spring_security_demo_bcrypt?useSSL=false",
-						"springstudent","springstudent");
+						"root","parasute72bz");
 			Statement stmt=con.createStatement(); 
 			ResultSet rs=stmt.executeQuery("select `name` from subjects");
 			
@@ -75,10 +95,10 @@ public class DemoController {
 		return "systems";
 	}
 	
-	@GetMapping("/uploadSubjects")
-	public String uploadSubjects() {
-		
-		String fileName = "D:\\Licenta\\stat_functii_2.xls";
+	@GetMapping("uploadSubjectsDinamically")
+	public String uploadSubjectDinamically(Model model,@RequestParam("NormsDocument") File file) throws IOException {
+
+		String fileName = file.getPath();
 		try {
 			
 			TreeSet<String> subjects = new TreeSet<>();
@@ -102,31 +122,6 @@ public class DemoController {
 					while(cellIterator.hasNext()) {
 					
 					Cell currentCell = cellIterator.next();
-					//  CellType type = cell.getCellTypeEnum()
-					/*
-					 * Values for Celltype are:
-
-							_NONE(-1),
-							NUMERIC(0),
-							STRING(1),
-							FORMULA(2),
-							BLANK(3),
-							BOOLEAN(4),
-							ERROR(5);
-					 */
-					
-					/*if(currentCell.getColumnIndex() == 6
-							&&(currentCell.getStringCellValue().contains("Total")
-								|| currentCell.getStringCellValue().contains("TOTAL")
-								|| currentCell.getStringCellValue().contains("Alte activitati")
-								|| currentCell.getStringCellValue().contains("Norma de cercetare")
-								|| currentCell.getStringCellValue().contains("Denumire disciplina")
-								|| currentCell.getStringCellValue().contains(null))) {
-						continue;
-						
-					}*/
-					
-					
 					
 					int type = currentCell.getCellType();
 					if(type == 1 && currentCell.getColumnIndex() == 6
@@ -138,7 +133,6 @@ public class DemoController {
 							&& !(currentCell.getStringCellValue().equals(null)))
 							
 					{
-						//System.out.println(currentCell.getStringCellValue());
 						subjects.add(currentCell.getStringCellValue().trim());
 						currentNorm.setSubjectName(currentCell.getStringCellValue().trim());
 					}
@@ -188,6 +182,31 @@ public class DemoController {
 							}
 							break;
 							
+					case 14 : int priorHoursCourse1 = currentNorm.getAvailableHoursCourse();
+							currentNorm.setAvailableHoursCourse(priorHoursCourse1 + (int) currentCell.getNumericCellValue()*weeksPerSemester);
+							break;
+							
+					case 15 : int priorHoursApplication1 = currentNorm.getAvailableHoursApplication();
+							currentNorm.setAvailableHoursApplication(priorHoursApplication1 + (int) currentCell.getNumericCellValue()*weeksPerSemester);
+							break;
+							
+					case 16 :
+						int priorHoursCourse2 = currentNorm.getAvailableHoursCourse();
+						currentNorm.setAvailableHoursCourse(priorHoursCourse2 + (int) currentCell.getNumericCellValue()*weeksPerSemester);
+						//if(counter > 50)
+						//System.out.println( counter + " : &&&&&&&&&&&&& : "   + currentNorm.getSubjectName()  + " && : " + currentNorm.getAvailableHoursCourse());
+						break;
+						
+					case 17 :
+						int priorHoursApplication2 = currentNorm.getAvailableHoursApplication();
+						currentNorm.setAvailableHoursApplication(priorHoursApplication2 + (int) currentCell.getNumericCellValue()*weeksPerSemester);
+						//if(counter > 50) {
+							//System.out.println(counter + ": &&&&&&&&&&& : " + currentNorm.getSubjectName() + " && : " + currentNorm.getAvailableHoursApplication());
+						//}
+						//counter++;
+						break;
+						
+							
 					default: break;
 					
 					}
@@ -196,27 +215,15 @@ public class DemoController {
 				}
 				
 				norms.add(currentNorm);
-				//System.out.println();
+				
 			}
-			
-			/*for(String subject : subjects) {
-				System.out.println(subject);
-			}*/
-			
-			/*for(Norm currentNorm : norms) {
-				System.out.println(currentNorm.getAvailability() + " " 
-						//+ currentNorm.getSubjectName() + " "
-						+ currentNorm.getFaculty() + " "
-						+ currentNorm.getLanguage() + " "
-						+ currentNorm.getYear() + " "
-						+ currentNorm.getSeries());
-			} */
+
 				
 				try {
 					Class.forName("com.mysql.jdbc.Driver"); 
 					Connection con=DriverManager.getConnection(  
 							"jdbc:mysql://localhost:3306/spring_security_demo_bcrypt?useSSL=false",
-								"springstudent","springstudent");
+								"root","parasute72bz");
 					Statement stmt=con.createStatement(); 
 					
 					for(String subject : subjects) {
@@ -245,7 +252,7 @@ public class DemoController {
 		/*incarcarea in baza de date a tuturor normelor*/
 		try {
 			
-			String fileName1 = "D:\\Licenta\\stat_functii_2.xls";
+			String fileName1 = file.getPath();
 			FileInputStream excelFile = new FileInputStream(new File(fileName1));
 			HSSFWorkbook workbook = new HSSFWorkbook(excelFile);
 			Sheet datatypeSheet = workbook.getSheetAt(0);
@@ -349,8 +356,12 @@ public class DemoController {
 						case 17 : 
 							if(currentCell == null || currentCell.getCellType() == Cell.CELL_TYPE_BLANK	|| currentCell.getCellType() == Cell.CELL_TYPE_STRING	){
 								currentNorm.setNormNumber(0);
+				
 							} else {
 								currentNorm.setHoursPerWeekApplications2((int)currentCell.getNumericCellValue());
+								System.out.println(counter + "######## : " + currentNorm.getAvailableHoursApplication());
+								System.out.println(currentNorm.getSubjectName());
+								counter++;
 							}
 							break;
 					}		
@@ -364,7 +375,7 @@ public class DemoController {
 				Class.forName("com.mysql.jdbc.Driver"); 
 				Connection con1=DriverManager.getConnection(  
 						"jdbc:mysql://localhost:3306/spring_security_demo_bcrypt?useSSL=false",
-							"springstudent","springstudent");
+							"root","parasute72bz");
 				Statement stmt1=con1.createStatement(); 
 				String query1 = " insert into norms(`norm_number`,`position_name`,`availability`, `subject_name`, `faculty`, `studies_type`, `language`, `year`, `series`, `hours_per_week_course_1`, `hours_per_week_application_1`, `hours_per_week_course_2`, `hours_per_week_application_2`)"
 						+ " values(?,?,?,?,?,?,?,?,?,?,?,?,?)";
@@ -413,23 +424,24 @@ public class DemoController {
 		
 		
 		
-		return "uploadSubjectsCompleted";
+		
+		
+		
+		
+		
+		
+		model.addAttribute("message", fileName );
+		
+	 	return "uploadSubjectsDinamicallyCompleted";
 	}
+	
+	
 	
 	@GetMapping("selectSubject")
 	public String selectSubject(Model theModel, @RequestParam("tempSubject") String tempSubject) {
 		
 		
 		theModel.addAttribute("tempSubject",tempSubject);
-		
-		
-		/*
-		 * fa un tabel cu toate normele 
-		 * fa un tabel profesor_norme
-		 * extrage din baza de date toate normele corespunzatoare materiei tempSubject
-		 */
-		
-		
 		
 		return "list-of-series";
 	}
@@ -480,7 +492,7 @@ public class DemoController {
 			Class.forName("com.mysql.jdbc.Driver"); 
 			Connection con1=DriverManager.getConnection(  
 					"jdbc:mysql://localhost:3306/spring_security_demo_bcrypt?useSSL=false",
-						"springstudent","springstudent");
+						"root","parasute72bz");
 			
 			
 			
@@ -516,14 +528,7 @@ public class DemoController {
 				rs3.next();
 				int existingHours = rs3.getInt(6);
 				
-				/*
-				 * PreparedStatement preparedStmt = con1.prepareStatement(query);
-				preparedStmt.setString(1, username);
-				ResultSet rs=preparedStmt.executeQuery();
-				rs.next();
-				 */
-				
-				if(existingHours + additionalHours*weeksPerSemester <= 400) {
+				if(existingHours + additionalHours*weeksPerSemester <= maxNumberHours) {
 					String query2 = "update `users` set `hours`= `hours` + " + weeksPerSemester * additionalHours + " where `username`= ? ";
 					PreparedStatement preparedStmt2 = con1.prepareStatement(query2);
 					preparedStmt2.setString(1, username);
@@ -572,7 +577,7 @@ public class DemoController {
 			Class.forName("com.mysql.jdbc.Driver"); 
 			Connection con=DriverManager.getConnection(  
 					"jdbc:mysql://localhost:3306/spring_security_demo_bcrypt?useSSL=false",
-						"springstudent","springstudent");
+						"root","parasute72bz");
 			Statement stmt=con.createStatement(); 
 			
 			
@@ -604,14 +609,9 @@ public class DemoController {
 				 currentNorm.setHoursPerWeekApplications2(rs.getInt(14));
 				 }
 				 
-				 
-				 //requiredNormList.add(currentNorm);
-				 
-				 
 				 if(currentNorm.getSubjectName().equals(tempSubject) && currentNorm.getSeries().equals(tempSeries)) {
 					 
 					 requiredNormList.add(currentNorm); 
-					 //System.out.println(tempSeries + " ?= " + currentNorm.getSeries());
 				 }
 			}
 			theModel.addAttribute("requiredNormList", requiredNormList);
@@ -633,7 +633,7 @@ public class DemoController {
 	@GetMapping("checkAdditionalHours")
 	public String checkAdditionalHours(Model theModel) {
 		
-		int  maxHours = 400;
+		int  maxHours = maxNumberHours;
 		int availableHours;
 		Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		
@@ -648,7 +648,7 @@ public class DemoController {
 			Class.forName("com.mysql.jdbc.Driver"); 
 			Connection con1=DriverManager.getConnection(  
 					"jdbc:mysql://localhost:3306/spring_security_demo_bcrypt?useSSL=false",
-						"springstudent","springstudent");
+						"root","parasute72bz");
 			String query = "select * from `users` where `username` = ?";
 			PreparedStatement preparedStmt = con1.prepareStatement(query);
 			preparedStmt.setString(1, username);
@@ -667,10 +667,7 @@ public class DemoController {
 			PreparedStatement preparedStmt2 = con1.prepareStatement(query2);
 			preparedStmt2.setString(1, fullName);
 			ResultSet rs2 = preparedStmt.executeQuery();
-			
-			/*
-			 * trebuie sa afisezi toate normele suplimentare luate de profesor :)
-			 */
+
 			
 			con1.close();
 		} catch(Exception e) {
@@ -686,7 +683,7 @@ public class DemoController {
 	
 	public static boolean checkEligibilityForNorms(String username, ArrayList<Integer> normIdList) {
 		
-		int maxHours = 400;
+		int maxHours = maxNumberHours;
 		int weeksPerSemester = 14;
 		int desiredHours = 0;
 		
@@ -736,6 +733,16 @@ public class DemoController {
 		
 		return true;
 	}	
+	
+	@GetMapping("modifyMaxNoHours")
+	public String modifyMaxNoHours(Model model, @RequestParam("MAX") int MAX) {
+
+		maxNumberHours = MAX;
+		System.out.println("^^^^^^^ : " + maxNumberHours);
+		
+		model.addAttribute("MAX", MAX);
+		return "modifyMaxNoHoursCompleted";
+	}
 	
 
 }

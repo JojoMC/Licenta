@@ -4,11 +4,19 @@ public class Norm {
 
 	private int id;
 	private int normNumber;
+	private int availableHoursCourse;
+	private int availableHoursApplication;
 	private String positionName;
 	private String availability;
 	private String subjectName;
 	private String faculty;
 	private String studiesType;
+	
+	public Norm() {
+		this.availableHoursCourse = 0;
+		this.availableHoursApplication = 0;
+	}
+	
 	public int getNormNumber() {
 		return normNumber;
 	}
@@ -103,6 +111,22 @@ public class Norm {
 	public void setId(int id) {
 		this.id = id;
 	}
+	public int getAvailableHoursCourse() {
+		return availableHoursCourse;
+	}
+	public void setAvailableHoursCourse(int availableHours) {
+		this.availableHoursCourse = availableHours;
+	}
+	public int getAvailableHoursApplication() {
+		return availableHoursApplication;
+	}
+	public void setAvailableHoursApplication(int availableHoursApplication) {
+		this.availableHoursApplication = availableHoursApplication;
+	}
+	
+	
+	
+	
 	
 	
 }

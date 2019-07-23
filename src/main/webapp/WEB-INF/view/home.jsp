@@ -48,9 +48,16 @@
 	
 	<security:authorize access="hasRole('ADMIN')">
 	
-	<form action="uploadSubjects" method="get">
-		<input type="submit" value="Actualizati materiile">
+	<form action="uploadSubjectsDinamically" method="get">
+		<input type="file" name="NormsDocument" accept=".xls, .xlsx" />
+		<input type="submit" value="Actualizati Materiile" />
+	</form>
+	<br />
+	<br />
 	
+	<form action="modifyMaxNoHours" method="get">
+		<input type="int" name="MAX" />
+		<input type="submit" value="Actualizati numarul maxim de ore" />
 	</form>
 	
 	</security:authorize>
