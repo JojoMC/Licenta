@@ -19,11 +19,29 @@
 <br>
 <p>Normele disponibile la seria ${tempSeries } pentru materia ${tempSubject } sunt urmatoarele : </p>
 
+	
 		
-		
-		<form:form action="confirmNorms" method="GET">
-		
-		 <table style="width:100%" border="1">
+		<form:form action="confirmNorms" method="GET" id="myForm">		
+		 <table  border="1">
+				 <tr>
+				 	<th>Interes norma</th>
+				 	<th>Ore curs dorite</th>
+				 	<th>Ore aplicatii dorite</th>
+				 	<th>Ore curs disponibile</th>
+				 	<th>Ore aplicatii disponibile</th>
+				 	<th>Titlu</th>
+				 	<th>disponibilitate</th>
+				 	<th>Nume materie</th>
+				 	<th>Facultate</th>
+				 	<th>Tip studii</th>
+				 	<th>Limba predare</th>
+				 	<th>An</th>
+				 	<th>Seria</th>
+				 	<th>Ore curs saptamana sem 1</th>
+				 	<th>Ore applicatii saptamana sem 1</th>
+				 	<th>Ore curs saptamana sem 2</th>
+				 	<th>Ore applicatii saptamana sem 2</th>
+				 </tr>
 		 
 		 		<c:forEach var="tempNorm" items="${requiredNormList }">
 		  			<tr >
@@ -31,21 +49,52 @@
 		  			<c:choose>
     					<c:when test="${tempNorm.availability == 'vacant'}">
         					<th width="7%">
-                     			<label><input type="checkbox" id='ceva' name="ceva" value="${tempNorm.id }"></label>
+        					<fieldset id="radio">
+                     			<label><input type="radio" id="ceva.${tempNormId }" name="ceva" value="${tempNorm.id }" class="${ tempNorm.id}.checkBox" onChange="myFunction(${tempNorm.id },this)"></label>
+		  					</fieldset>
 		  					</th>
+		  					<th><input type="text" name="takenCourseHours" value="0" id="1.${tempNorm.id }" class="textInput" disabled></th>
+			  				<th><input type="text" name="takenApplicationHours" value="0" id="2.${tempNorm.id }" class="textInput" disabled></th>
+			  				<script>
+
+			  					 function myFunction(id, element) {
+			  						
+									console.log(id);
+									console.log('1.'+id);
+									var elementId = id + 'textInputCourse';
+									if(document.getElementById('1.'+id).disabled && element.checked) {
+										var variables = document.getElementsByClassName("textInput");
+										for(var i=0; i<variables.length; i++) {
+											console.log(variables[i]);
+											variables[i].disabled=true;
+										}
+										document.getElementById('1.'+id).disabled=false;
+										document.getElementById('2.'+id).disabled=false;
+										
+									}
+									else {
+										document.getElementById('1.'+id).disabled=true;
+										document.getElementById('2.'+id).disabled=true;
+									} 
+									console.log(element);
+	
+			  					} 
+			  				</script>
     					</c:when>
     					<c:otherwise>
     						<th width="7%">
         						<label>ocupata</label>
         					</th>
+        					<th>-</th>
+        					<th>-</th>
     					</c:otherwise>
 					</c:choose>
-		  			
-		  			
-		  			<!-- https://stackoverflow.com/questions/9140633/how-to-change-the-value-of-a-check-box-onclick-using-jquery -->
-		  			
-		  				<th>${tempNorm.id }</th>
-		  				<th>${tempNorm.normNumber }</th>
+		  		
+<%-- 		  			
+	  					<th>${tempNorm.id }</th>
+		  				<th>${tempNorm.normNumber }</th> --%>
+		  				<th>${tempNorm.availableHoursCourse }</th>
+		  				<th>${tempNorm.availableHoursApplication }</th>
 		  				<th>${tempNorm.positionName }</th>
 		  				<th>${tempNorm.availability}</th>
 		  				<th>${tempNorm.subjectName}</th>

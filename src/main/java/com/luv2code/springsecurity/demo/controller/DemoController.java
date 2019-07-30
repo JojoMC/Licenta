@@ -182,28 +182,22 @@ public class DemoController {
 							}
 							break;
 							
-					case 14 : int priorHoursCourse1 = currentNorm.getAvailableHoursCourse();
-							currentNorm.setAvailableHoursCourse(priorHoursCourse1 + (int) currentCell.getNumericCellValue()*weeksPerSemester);
+					case 14 : 
+							currentNorm.setAvailableHoursCourse((int) currentCell.getNumericCellValue()*weeksPerSemester);
 							break;
 							
-					case 15 : int priorHoursApplication1 = currentNorm.getAvailableHoursApplication();
-							currentNorm.setAvailableHoursApplication(priorHoursApplication1 + (int) currentCell.getNumericCellValue()*weeksPerSemester);
+					case 15 : 
+							currentNorm.setAvailableHoursApplication( (int) currentCell.getNumericCellValue()*weeksPerSemester);
 							break;
 							
 					case 16 :
 						int priorHoursCourse2 = currentNorm.getAvailableHoursCourse();
 						currentNorm.setAvailableHoursCourse(priorHoursCourse2 + (int) currentCell.getNumericCellValue()*weeksPerSemester);
-						//if(counter > 50)
-						//System.out.println( counter + " : &&&&&&&&&&&&& : "   + currentNorm.getSubjectName()  + " && : " + currentNorm.getAvailableHoursCourse());
 						break;
 						
 					case 17 :
 						int priorHoursApplication2 = currentNorm.getAvailableHoursApplication();
 						currentNorm.setAvailableHoursApplication(priorHoursApplication2 + (int) currentCell.getNumericCellValue()*weeksPerSemester);
-						//if(counter > 50) {
-							//System.out.println(counter + ": &&&&&&&&&&& : " + currentNorm.getSubjectName() + " && : " + currentNorm.getAvailableHoursApplication());
-						//}
-						//counter++;
 						break;
 						
 							
@@ -330,6 +324,7 @@ public class DemoController {
 								currentNorm.setNormNumber(0);
 							} else {
 								currentNorm.setHoursPerWeekCourse1((int)currentCell.getNumericCellValue());
+								currentNorm.setAvailableHoursCourse(currentNorm.getAvailableHoursCourse() + (int)currentCell.getNumericCellValue() * weeksPerSemester);
 							}
 							break;
 							
@@ -339,6 +334,7 @@ public class DemoController {
 								currentNorm.setNormNumber(0);
 							} else {
 								currentNorm.setHoursPerWeekApplications1((int)currentCell.getNumericCellValue());
+								currentNorm.setAvailableHoursApplication(currentNorm.getAvailableHoursApplication() + (int)currentCell.getNumericCellValue() * weeksPerSemester);
 							}
 							
 							break;
@@ -349,6 +345,7 @@ public class DemoController {
 								currentNorm.setNormNumber(0);
 							} else {
 								currentNorm.setHoursPerWeekCourse2((int)currentCell.getNumericCellValue());
+								currentNorm.setAvailableHoursCourse(currentNorm.getAvailableHoursCourse() + (int)currentCell.getNumericCellValue() * weeksPerSemester);
 							}
 							
 							break;
@@ -359,11 +356,10 @@ public class DemoController {
 				
 							} else {
 								currentNorm.setHoursPerWeekApplications2((int)currentCell.getNumericCellValue());
-								System.out.println(counter + "######## : " + currentNorm.getAvailableHoursApplication());
-								System.out.println(currentNorm.getSubjectName());
-								counter++;
+								currentNorm.setAvailableHoursApplication(currentNorm.getAvailableHoursApplication() + (int)currentCell.getNumericCellValue() * weeksPerSemester);
 							}
 							break;
+							
 					}		
 				}
 				normList.add(currentNorm);	
@@ -377,9 +373,9 @@ public class DemoController {
 						"jdbc:mysql://localhost:3306/spring_security_demo_bcrypt?useSSL=false",
 							"root","parasute72bz");
 				Statement stmt1=con1.createStatement(); 
-				String query1 = " insert into norms(`norm_number`,`position_name`,`availability`, `subject_name`, `faculty`, `studies_type`, `language`, `year`, `series`, `hours_per_week_course_1`, `hours_per_week_application_1`, `hours_per_week_course_2`, `hours_per_week_application_2`)"
-						+ " values(?,?,?,?,?,?,?,?,?,?,?,?,?)";
-				//System.out.println("###########");				
+				String query1 = " insert into norms(`norm_number`,`position_name`,`availability`, `subject_name`, `faculty`, `studies_type`, `language`, `year`, `series`, `hours_per_week_course_1`, `hours_per_week_application_1`, `hours_per_week_course_2`, `hours_per_week_application_2`, `available_hours_course`, `available_hours_application`)"
+						+ " values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+			
 				
 				int i = 0;
 				int j = 0;
@@ -387,7 +383,6 @@ public class DemoController {
 					if(!currentNorm.getAvailability().equals("")) {
 						
 						availability = currentNorm.getAvailability();
-						//System.out.println("@@@@ " + availability);
 					}
 					
 					
@@ -405,7 +400,9 @@ public class DemoController {
 					preparedStmt1.setInt(11, currentNorm.getHoursPerWeekApplications1());
 					preparedStmt1.setInt(12, currentNorm.getHoursPerWeekCourse2());
 					preparedStmt1.setInt(13, currentNorm.getHoursPerWeekApplications2());
-					//System.out.println(currentNorm.getYear());
+					preparedStmt1.setInt(14, currentNorm.getAvailableHoursCourse());
+					preparedStmt1.setInt(15, currentNorm.getAvailableHoursApplication());
+
 					preparedStmt1.executeUpdate();
 				}
 				con1.close();
@@ -420,16 +417,7 @@ public class DemoController {
 			}catch(Exception e) {
 				e.printStackTrace();
 			}
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
+
 		model.addAttribute("message", fileName );
 		
 	 	return "uploadSubjectsDinamicallyCompleted";
@@ -447,13 +435,26 @@ public class DemoController {
 	}
 	
 	@GetMapping("confirmNorms")
-	public String confirmNorms(Model theModel, @RequestParam("ceva") String tempNormId) {
+	public String confirmNorms(Model theModel, @RequestParam("ceva") String tempNormId, @RequestParam("takenCourseHours") String takenCourseHours,
+				@RequestParam("takenApplicationHours") String takenApplicationHours) {
 		
 		theModel.addAttribute("tempNormId", tempNormId);
 		ArrayList<String> normIdList = new ArrayList<String>();
 		int weeksPerSemester = 14;
 		ArrayList<Integer> normList = new ArrayList<Integer>();
+		int takenCourse, takenApplication;
+		
+		try {
+			takenCourse = Integer.parseInt(takenCourseHours);
+			takenApplication = Integer.parseInt(takenApplicationHours);
+		} catch(Exception e) {
+			//e.printStackTrace();
+			return "invalid-input";
+		}
 
+		System.out.println("##################### Taken Course Hours : " + takenCourseHours);
+		System.out.println("##################### Taken App Hours : " + takenApplicationHours);
+		System.out.println("##################### Taken tempNormId : " + tempNormId);
 
 		
 		System.out.println("@@@ : " + tempNormId);
@@ -486,7 +487,7 @@ public class DemoController {
 		
 		
 		
-		if(checkEligibilityForNorms(username, normList)) {
+		if(checkEligibilityForNorms(username, normList, takenCourse, takenApplication)) {
 		
 		try {
 			Class.forName("com.mysql.jdbc.Driver"); 
@@ -516,7 +517,13 @@ public class DemoController {
 				rs.next();
 				System.out.println(rs.getString(1) + " " + rs.getString(2) + " " + rs.getString(3));
 				
-				int additionalHours = rs.getInt(11) + rs.getInt(12) + rs.getInt(13) + rs.getInt(14);
+				//int additionalHours = rs.getInt(11) + rs.getInt(12) + rs.getInt(13) + rs.getInt(14);
+				int availableHoursCourse = rs.getInt(15);
+				int availableHoursApplication = rs.getInt(16);
+				
+				
+				
+				int additionalHours = takenCourse + takenApplication;
 				System.out.println("additional hours : " + additionalHours);
 				System.out.println(username);
 				
@@ -528,17 +535,131 @@ public class DemoController {
 				rs3.next();
 				int existingHours = rs3.getInt(6);
 				
-				if(existingHours + additionalHours*weeksPerSemester <= maxNumberHours) {
-					String query2 = "update `users` set `hours`= `hours` + " + weeksPerSemester * additionalHours + " where `username`= ? ";
+				if(existingHours + additionalHours <= maxNumberHours) {
+					String query2 = "update `users` set `hours`= `hours` + " + additionalHours + " where `username`= ? ";
 					PreparedStatement preparedStmt2 = con1.prepareStatement(query2);
 					preparedStmt2.setString(1, username);
 					preparedStmt2.executeUpdate();
 					
-					String query = "update `norms` set `availability` = ? where `id`= ? ";
-					PreparedStatement preparedStmt = con1.prepareStatement(query);
-					preparedStmt.setString(1, fullName);
-					preparedStmt.setString(2, normId);
-					preparedStmt.executeUpdate();
+					if(takenCourse == availableHoursCourse && takenApplication==availableHoursApplication) {
+						String query = "update `norms` set `availability` = ?, `available_hours_course`=0, available_hours_application=0 where `id`= ? ";
+						PreparedStatement preparedStmt = con1.prepareStatement(query);
+						preparedStmt.setString(1, "ocupata");
+						preparedStmt.setString(2, normId);
+						preparedStmt.executeUpdate();
+						// add professor norm fragment here
+						
+
+							int chosenNormId = rs.getInt(1);
+							int chosenNormNumber = rs.getInt(2);
+							String chosenPositionName = rs.getString(3);
+							String chosenAvailability = rs.getString(4);
+							String chosenSubjectName = rs.getString(5);
+							String chosenFaculty = rs.getString(6);
+							String chosenStudiesType = rs.getString(7);
+							String chosenLanguage = rs.getString(8);
+							String chosenYear = rs.getString(9);
+							String chosenSeries = rs.getString(10);
+							int chosenHoursPerWeekCourse1 = rs.getInt(11);
+							int chosenHoursPerWeekApplication1 = rs.getInt(12);
+							int chosenHoursPerWeekCourse2 = rs.getInt(13);
+							int chosenHoursPerWeekApplication2 = rs.getInt(13);
+							System.out.println(chosenNormId);
+							System.out.println(chosenNormNumber);
+							System.out.println(chosenPositionName);
+							System.out.println(chosenAvailability);
+							System.out.println(chosenSubjectName);
+							System.out.println(chosenFaculty);
+							System.out.println(chosenStudiesType);
+							System.out.println(chosenLanguage);
+							System.out.println(chosenYear);
+							System.out.println(chosenSeries);
+							System.out.println(chosenHoursPerWeekCourse1);
+							System.out.println(chosenHoursPerWeekApplication1);
+							System.out.println(chosenHoursPerWeekCourse2);
+							System.out.println(chosenHoursPerWeekApplication2);
+						
+						
+						
+							
+							  
+							 
+					} 
+					else if(takenCourse > availableHoursCourse || takenApplication > availableHoursApplication) {
+						return "invalid-input";
+					}
+					else{
+						System.out.println("%%%%%%%% : availableHoursCourse : " + availableHoursCourse);
+						System.out.println("%%%%%%%% : availabelHoursApplication : " + availableHoursApplication);
+						System.out.println("%%%%%%%% : takenCourse: " + takenCourse);
+						System.out.println("%%%%%%%% : takenApplication : " + takenApplication);
+						String query = "update `norms` set `available_hours_course`=?, `available_hours_application`=? where `id`=?";
+						PreparedStatement preparedStmt = con1.prepareStatement(query);
+						preparedStmt.setInt(1, availableHoursCourse-takenCourse);
+						preparedStmt.setInt(2, availableHoursApplication-takenApplication);
+						preparedStmt.setInt(3, Integer.parseInt(normId));
+						preparedStmt.executeUpdate();
+						// add professor norm fragment here
+						
+						int chosenNormId = rs.getInt(1);
+						int chosenNormNumber = rs.getInt(2);
+						String chosenPositionName = rs.getString(3);
+						String chosenAvailability = rs.getString(4);
+						String chosenSubjectName = rs.getString(5);
+						String chosenFaculty = rs.getString(6);
+						String chosenStudiesType = rs.getString(7);
+						String chosenLanguage = rs.getString(8);
+						String chosenYear = rs.getString(9);
+						String chosenSeries = rs.getString(10);
+						int chosenHoursPerWeekCourse1 = rs.getInt(11);
+						int chosenHoursPerWeekApplication1 = rs.getInt(12);
+						int chosenHoursPerWeekCourse2 = rs.getInt(13);
+						int chosenHoursPerWeekApplication2 = rs.getInt(13);
+						System.out.println(chosenNormId);
+						System.out.println(chosenNormNumber);
+						System.out.println(chosenPositionName);
+						System.out.println(chosenAvailability);
+						System.out.println(chosenSubjectName);
+						System.out.println(chosenFaculty);
+						System.out.println(chosenStudiesType);
+						System.out.println(chosenLanguage);
+						System.out.println(chosenYear);
+						System.out.println(chosenSeries);
+						System.out.println(chosenHoursPerWeekCourse1);
+						System.out.println(chosenHoursPerWeekApplication1);
+						System.out.println(chosenHoursPerWeekCourse2);
+						System.out.println(chosenHoursPerWeekApplication2);
+
+						
+						
+							PreparedStatement preparedStmt4 = con1
+									.prepareStatement("insert into norms_fragments(`norm_number`,"
+											+ "`position_name`, `owner`, `subject_name`, `faculty`, `studies_type`, `language`, `year`, `series`, "
+											+ "`hours_per_week_course_1`, `hours_per_week_application_1`, "
+											+ "`hours_per_week_course_2`, `hours_per_week_application_2`, `norm_id`) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+
+							preparedStmt4.setInt(1, chosenNormNumber);
+							preparedStmt4.setString(2, chosenPositionName);
+							preparedStmt4.setString(3, username);
+							preparedStmt4.setString(4, chosenSubjectName);
+							preparedStmt4.setString(5, chosenFaculty);
+							preparedStmt4.setString(6, chosenStudiesType);
+							preparedStmt4.setString(7, chosenLanguage);
+							preparedStmt4.setString(8, chosenYear);
+							preparedStmt4.setString(9, chosenSeries);
+							preparedStmt4.setInt(10, chosenHoursPerWeekCourse1);
+							preparedStmt4.setInt(11, chosenHoursPerWeekApplication1);
+							preparedStmt4.setInt(12, chosenHoursPerWeekCourse2);
+							preparedStmt4.setInt(13, chosenHoursPerWeekApplication2);
+							preparedStmt4.setInt(14, chosenNormId);
+							preparedStmt4.executeUpdate();
+						
+						
+						
+						
+						
+					}
+					
 				} else {
 					return "hours-overflow";
 				}
@@ -607,6 +728,8 @@ public class DemoController {
 				 currentNorm.setHoursPerWeekApplications1(rs.getInt(12));
 				 currentNorm.setHoursPerWeekCourse2(rs.getInt(13));
 				 currentNorm.setHoursPerWeekApplications2(rs.getInt(14));
+				 currentNorm.setAvailableHoursCourse(rs.getInt(15));
+				 currentNorm.setAvailableHoursApplication(rs.getInt(16));
 				 }
 				 
 				 if(currentNorm.getSubjectName().equals(tempSubject) && currentNorm.getSeries().equals(tempSeries)) {
@@ -621,12 +744,7 @@ public class DemoController {
 		}catch(Exception e) {
 			e.printStackTrace();
 		}
-		
-		
-		
-		
-		
-		
+
 		return "list-of-norms";
 	}
 	
@@ -643,6 +761,7 @@ public class DemoController {
 			} else {
 			  username = principal.toString();
 			}
+		ArrayList<Norm> normsList = new ArrayList<>();
 		
 		try {
 			Class.forName("com.mysql.jdbc.Driver"); 
@@ -660,13 +779,42 @@ public class DemoController {
 			theModel.addAttribute("hours", hours);
 			availableHours = maxHours - hours;
 			theModel.addAttribute("availableHours", availableHours);
-			System.out.println("###### Additional hours: " + hours);
+			//System.out.println("###### Additional hours: " + hours);
 			
 			
 			String query2 = "select * from `norms` where `availability` = ?";
 			PreparedStatement preparedStmt2 = con1.prepareStatement(query2);
 			preparedStmt2.setString(1, fullName);
 			ResultSet rs2 = preparedStmt.executeQuery();
+			
+			String query3 = "select * from `norms_fragments` where owner = ?";
+			PreparedStatement preparedStmt3 = con1.prepareStatement(query3);
+			preparedStmt3.setString(1, username);
+			ResultSet rs3 = preparedStmt3.executeQuery();
+
+			//rs3.first();
+			//System.out.println("@@@@@@@@@@@@@@@@ : first " + rs3.getString(5));
+			//rs3.next();
+			//System.out.println("@@@@@@@@@@@@@@@@@@@@ : second " + rs3.getString(5));
+			Norm currentNorm = new Norm();
+			while(rs3.next()) {
+				currentNorm.setId(rs3.getInt(15));
+				currentNorm.setNormNumber(rs3.getInt(2));
+				currentNorm.setPositionName(rs3.getString(3));
+				currentNorm.setSubjectName(rs3.getString(5));
+				currentNorm.setFaculty(rs3.getString(6));
+				currentNorm.setStudiesType(rs3.getString(7));
+				currentNorm.setLanguage(rs3.getString(8));
+				currentNorm.setYear(rs3.getString(9));
+				currentNorm.setSeries(rs3.getString(10));
+				currentNorm.setHoursPerWeekCourse1(rs3.getInt(11));
+				currentNorm.setHoursPerWeekApplications1(rs3.getInt(12));
+				currentNorm.setHoursPerWeekCourse2(rs3.getInt(13));
+				currentNorm.setHoursPerWeekApplications2(rs3.getInt(14));
+				System.out.println("materia " + currentNorm.getSubjectName());
+				normsList.add(currentNorm);
+			}
+			
 
 			
 			con1.close();
@@ -674,27 +822,29 @@ public class DemoController {
 			e.printStackTrace();
 		}
 		
-		
-		
+		System.out.println(normsList.size());
+		theModel.addAttribute("normsList", normsList);
 		theModel.addAttribute("username", username);
 		
 		return "hours-checked";
 	}
 	
-	public static boolean checkEligibilityForNorms(String username, ArrayList<Integer> normIdList) {
+	public static boolean checkEligibilityForNorms(String username, ArrayList<Integer> normIdList, int takenCourseHours,
+			int takenApplicationHours) {
 		
 		int maxHours = maxNumberHours;
 		int weeksPerSemester = 14;
-		int desiredHours = 0;
+		int desiredHours = takenCourseHours + takenApplicationHours;
 		
 		try {
 			Class.forName("com.mysql.jdbc.Driver"); 
 			Connection con1=DriverManager.getConnection(  
 					"jdbc:mysql://localhost:3306/spring_security_demo_bcrypt?useSSL=false",
-						"springstudent","springstudent");
+						"root","parasute72bz");
 			String query = "select * from `users` where `username` = ?";
 			PreparedStatement preparedStmt = con1.prepareStatement(query);
 			preparedStmt.setString(1, username);
+			System.out.println("???????????????? username : " + username);
 			ResultSet rs=preparedStmt.executeQuery();
 			rs.next();
 			
@@ -721,6 +871,8 @@ public class DemoController {
 			}
 			
 			con1.close();
+			
+			desiredHours = takenCourseHours + takenApplicationHours;
 			
 			if(desiredHours + hours > maxHours) {
 				return false;

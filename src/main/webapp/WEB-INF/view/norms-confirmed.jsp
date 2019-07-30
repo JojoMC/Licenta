@@ -11,7 +11,7 @@
 </head>
 <body>
 
-Ati adaugat urmatoarele norme : ${tempNormId }
+Ati adaugat ore din urmatoarele norme : ${tempNormId }
 <br />
 
 <c:forEach var="normId" items="${normIdList}">
